@@ -1,3 +1,6 @@
+# Modified by: Suk Yee Yong
+# Update date: 19 August 2024
+
 import subprocess
 import sys
 from argparse import ArgumentParser
@@ -10,13 +13,14 @@ import genslm
 
 
 class HPCSettings(BaseModel):
-    allocation: str
+    account: str
     queue: str
     time: str
     nodes: int
     job_name: str
     reservation: str = ""
     workdir: Path
+    envpath: Path
     filesystems: str = "home:grand:eagle"
     module: str
     """Module path to python entry point."""
@@ -52,11 +56,13 @@ def format_and_submit(template_name: str, settings: HPCSettings) -> None:
         "perlmutter": "sbatch",
         "polaris": "qsub",
         "polaris_multinode_generate": "qsub",
+        "virga": "sbatch",
     }
     suffixs = {
         "perlmutter": "slurm",
         "polaris": "pbs",
         "polaris_multinode_generate": "pbs",
+        "virga": "slurm",
     }
 
     sbatch_script = settings.workdir / f"{settings.job_name}.{suffixs[template_name]}"
@@ -69,13 +75,14 @@ def format_and_submit(template_name: str, settings: HPCSettings) -> None:
 if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("-T", "--template", default="perlmutter")
-    parser.add_argument("-a", "--allocation", default="m3957_g")
+    parser.add_argument("-A", "--account", default="m3957_g")
     parser.add_argument("-q", "--queue", default="regular")
     parser.add_argument("-t", "--time", default="01:00:00")
     parser.add_argument("-n", "--nodes", default=1, type=int)
     parser.add_argument("-j", "--job_name", default="genslm")
     parser.add_argument("-r", "--reservation", default="")
     parser.add_argument("-w", "--workdir", default=Path("."), type=Path)
+    parser.add_argument("-e", "--envpath", default=Path("."), type=Path)
     parser.add_argument("-m", "--module", default="genslm.model")
     parser.add_argument("-v", "--vars", default="", help="module arguments in quotes.")
     parser.add_argument(
@@ -87,13 +94,14 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     settings = HPCSettings(
-        allocation=args.allocation,
+        account=args.account,
         queue=args.queue,
         time=args.time,
         nodes=args.nodes,
         job_name=args.job_name,
         reservation=args.reservation,
         workdir=args.workdir,
+        envpath=args.envpath,
         module=args.module,
         module_args=args.vars,
         filesystems=args.filesystems,

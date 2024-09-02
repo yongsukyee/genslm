@@ -1,0 +1,30 @@
+#!/bin/bash
+#SBATCH --account={{ account }}
+#SBATCH --time={{ time }}
+#SBATCH --nodes {{ nodes }}
+#SBATCH --gres=gpu:4
+#SBATCH --ntasks-per-node=4
+#SBATCH --output={{ workdir / job_name }}.out
+#SBATCH --error={{ workdir / job_name }}.err
+#SBATCH --mem=200G
+
+
+module load python
+module load pytorch
+module load transformers/4.34.1-py312
+source {{ envpath }}/bin/activate
+
+export MASTER_PORT=1234
+export WORLD_SIZE={{ nodes * 4 }}
+{% raw %}echo "NODELIST="${SLURM_NODELIST}{% endraw %}
+
+master_addr=$(scontrol show hostnames "$SLURM_JOB_NODELIST" | head -n 1)
+export MASTER_ADDR=$master_addr
+echo "MASTER_ADDR="$MASTER_ADDR
+
+export NCCL_DEBUG=WARN
+export PYTHONFAULTHANDLER=1
+
+
+srun {{ envpath }}/bin/python -m {{ module }} {{ module_args }}
+
