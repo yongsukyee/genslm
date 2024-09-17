@@ -19,7 +19,7 @@ pip install -e genslm/.
 ```
 
 ## Run script
-In `run_submit.sh`, edit `<ACCOUNT>` and relevant path location. Then,
+In `run_submit.sh`, edit `<ACCOUNT>` and relevant path location. Ensure that the number of nodes requested with `-n` is the same as `num_nodes` in YAML config. Then,
 ```bash
 bash run_submit.sh
 ```
