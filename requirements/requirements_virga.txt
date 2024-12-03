@@ -1,5 +1,5 @@
 biopython==1.83
-deepspeed==0.9.*
+#deepspeed==0.9.*
 h5py==3.10.0
 Jinja2==3.1.*
 lightning-transformers==0.2.1
@@ -7,6 +7,7 @@ natsort==8.4.0
 neptune-client==0.16.*
 #numpy<2
 pandas==2.1.*
+pip<24
 pydantic==1.10.*
 pytorch-lightning==1.6.5
 #transformers==4.34.1
