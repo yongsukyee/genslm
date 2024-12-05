@@ -20,10 +20,17 @@ pip install -e genslm/.
 ```
 
 ## Run script
-In `run_submit.sh`, edit `<ACCOUNT>` and relevant path location. Ensure that the number of nodes requested with `-n` is the same as `num_nodes` in YAML config. Then,
+In `run_submit.sh`, edit `<ACCOUNT>` and relevant path location. ~~Ensure that the number of nodes requested with `-n` is the same as `num_nodes` in YAML config.~~ Then,
 ```bash
 bash run_submit.sh
 ```
+
 Additional command-line arguments in `run_submit.sh`:
+- `-e`: Python virtual environment path
 - `-s`: Resubmit the SLURM job script after timeout. To cancel job when `-s` enabled, use `scancel --signal=USR1 <SLURM_JOB_ID>`.
+
+Modified configurations in `CONFIG.yaml`:
+- `checkpoint_dir`: Checkpoint directory within `workdir`
+- `load_init_pt_checkpoint`: Checkpoint `.pt` file to initialize model weights
+- `load_checkpoint_path`: Checkpoint directory path to load checkpoint model
 

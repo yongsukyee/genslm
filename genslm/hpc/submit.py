@@ -1,9 +1,5 @@
 # Modified by: Suk Yee Yong
 # Update date: 29 November 2024
-# Changes:
-# - Add `envpath` and `resubmit` to command-line argument
-# - Add virga template
-# - Save `command.log` to file
 
 import subprocess
 import sys

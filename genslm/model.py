@@ -1,9 +1,5 @@
 # Modified by: Suk Yee Yong
 # Update date: 4 December 2024
-# Changes:
-# - Rename `load_pt_checkpoint` to `load_init_pt_checkpoint`
-# - Add load model checkpoint from specified checkpoint or `last.ckpt` if exist
-# - Add set `num_nodes=nodes` to avoid manually setting `num_nodes`
 
 import json
 import os

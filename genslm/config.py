@@ -1,8 +1,5 @@
 # Modified by: Suk Yee Yong
 # Update date: 4 December 2024
-# Changes:
-# - Rename `load_pt_checkpoint` to `load_init_pt_checkpoint`
-# - Add `load_checkpoint_path`
 
 """Configuration."""
 import json
@@ -104,7 +101,7 @@ class ModelSettings(BaseSettings):
     checkpoint_dir: Optional[Path] = Path("codon_transformer")
     """Checkpoint directory within workdir to backup model weights."""
     load_init_pt_checkpoint: Optional[Path] = None
-    """Checkpoint pt file to initialze model weights."""
+    """Checkpoint pt file to initialize model weights."""
     load_checkpoint_path: Optional[Path] = None
     """Checkpoint directory path to load checkpoint model."""
     load_ds_checkpoint: Optional[Path] = None
