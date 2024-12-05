@@ -1,3 +1,9 @@
+# Modified by: Suk Yee Yong
+# Update date: 4 December 2024
+# Changes:
+# - Rename `load_pt_checkpoint` to `load_init_pt_checkpoint`
+# - Add `load_checkpoint_path`
+
 """Configuration."""
 import json
 import os
@@ -96,9 +102,11 @@ class ModelSettings(BaseSettings):
     wandb_model_tag: Optional[str] = None
     """Model tag for wandb labeling and resuming."""
     checkpoint_dir: Optional[Path] = Path("codon_transformer")
-    """Checkpoint directory to backup model weights."""
-    load_pt_checkpoint: Optional[Path] = None
+    """Checkpoint directory within workdir to backup model weights."""
+    load_init_pt_checkpoint: Optional[Path] = None
     """Checkpoint pt file to initialze model weights."""
+    load_checkpoint_path: Optional[Path] = None
+    """Checkpoint directory path to load checkpoint model."""
     load_ds_checkpoint: Optional[Path] = None
     """DeepSpeed checkpoint file to initialze model weights."""
     node_local_path: Optional[Path] = None

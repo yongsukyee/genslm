@@ -4,9 +4,10 @@
 #SBATCH --nodes {{ nodes }}
 #SBATCH --gres=gpu:4
 #SBATCH --ntasks-per-node=4
-#SBATCH --output={{ workdir / job_name }}.out
-#SBATCH --error={{ workdir / job_name }}.err
+#SBATCH --output={{ workdir }}/{{ job_name }}_%j.out
+#SBATCH --error={{ workdir }}/{{ job_name }}_%j.err
 #SBATCH --mem=200G
+#SBATCH --exclude=g004
 
 
 module load python
@@ -26,5 +27,18 @@ export NCCL_DEBUG=WARN
 export PYTHONFAULTHANDLER=1
 
 
-srun {{ envpath }}/bin/python -m {{ module }} {{ module_args }}
+# Function to handle timeout and resubmit
+handle_timeout() {
+    echo "Job timed out. Resubmitting job..."
+    # sbatch $0
+    sbatch "{{ workdir }}/{{ job_name }}.slurm"
+    exit 1
+}
+# Check if resubmit flag is true
+if [ "{{ resubmit }}" = "True" ]; then
+    echo "resubmit=True: Job will be resubmitted when timeout"
+    trap 'handle_timeout' SIGTERM
+fi
 
+srun {{ envpath }}/bin/python -m {{ module }} {{ module_args }}
+echo "Completed!"

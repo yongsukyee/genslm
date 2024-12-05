@@ -1,7 +1,15 @@
+# Modified by: Suk Yee Yong
+# Update date: 4 December 2024
+# Changes:
+# - Rename `load_pt_checkpoint` to `load_init_pt_checkpoint`
+# - Add load model checkpoint from specified checkpoint or `last.ckpt` if exist
+# - Add set `num_nodes=nodes` to avoid manually setting `num_nodes`
+
 import json
 import os
 import warnings
 from argparse import ArgumentParser
+from pathlib import Path
 from typing import Any, Dict, List
 
 import pytorch_lightning as pl
@@ -260,19 +268,31 @@ class DNATransformer(pl.LightningModule):
 
 
 def train(cfg: ModelSettings) -> None:  # noqa
-    if cfg.load_pt_checkpoint is not None:
+    # Load model checkpoint to resume training
+    last_checkpoint = cfg.checkpoint_dir / "last.ckpt"
+    if cfg.load_checkpoint_path.exists() or last_checkpoint.exists():
+        model = DNATransformer(cfg)
+        # Load from load_checkpoint_path if available, else fall back to last.ckpt
+        resume_checkpoint = cfg.load_checkpoint_path or last_checkpoint
+        print(f"Resume from checkpoint >> {resume_checkpoint}")
+    # Load initial .pt checkpoint
+    elif cfg.load_init_pt_checkpoint is not None:
         load_strategy = LoadPTCheckpointStrategy(
-            cfg.load_pt_checkpoint, cfg=cfg, generation_flag=True
+            cfg.load_init_pt_checkpoint, cfg=cfg, generation_flag=True
         )
         model = load_strategy.get_model(DNATransformer)
+        resume_checkpoint = None
+        print(f"Load existing model >> {cfg.load_init_pt_checkpoint}")
+    # Check if loading from checkpoint - this assumes that you're loading from a sharded DeepSpeed checkpoint!!!
     elif cfg.load_ds_checkpoint is not None:
-        # Check if loading from checkpoint - this assumes that you're
-        # loading from a sharded DeepSpeed checkpoint!!!
         load_strategy = LoadDeepSpeedStrategy(cfg.load_ds_checkpoint, cfg=cfg)
         model = load_strategy.get_model(DNATransformer)
-        print(f"Loaded existing model at checkpoint {cfg.load_ds_checkpoint}....")
+        print(f"Load from deepspeed checkpoint >> {cfg.load_ds_checkpoint}")
+        resume_checkpoint = None
     else:
         model = DNATransformer(cfg)
+        resume_checkpoint = None
+        print("No checkpoint found! Training from scratch...")
 
     callbacks: List[Callback] = []
     print(f"Number of model parameters: {sum(p.numel() for p in model.parameters())}")
@@ -411,6 +431,7 @@ def train(cfg: ModelSettings) -> None:  # noqa
         limit_val_batches=cfg.limit_val_batches,
         max_steps=max_steps,
         gradient_clip_val=cfg.gradient_clip_value,
+        resume_from_checkpoint=resume_checkpoint
         # plugins=[SLURMEnvironment(auto_requeue=False)]
     )
 
@@ -438,8 +459,18 @@ def train(cfg: ModelSettings) -> None:  # noqa
 if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("-c", "--config", required=True)
+    parser.add_argument("-n", "--nodes", default=1, type=int)
+    parser.add_argument("-w", "--workdir", default=Path("."), type=Path)
     args = parser.parse_args()
     config = ModelSettings.from_yaml(args.config)
+
+    # Set num_nodes=nodes else will error in run
+    if config.num_nodes != args.nodes:
+        config.num_nodes = args.nodes
+        warnings.warn(f"num_nodes!=nodes, setting num_nodes={args.nodes}")
+    # Save checkpoint in work directory
+    if config.checkpoint_dir:
+        config.checkpoint_dir = args.workdir / config.checkpoint_dir
 
     # Setup torch environment
     os.environ["TOKENIZERS_PARALLELISM"] = "true"

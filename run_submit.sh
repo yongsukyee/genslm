@@ -12,7 +12,10 @@ python -m genslm.hpc.submit -T virga -A <ACCOUNT> \
     -w /scratch3/${USER}/genslm_wgsi/outputs/test \
     -e ${ENV_PATH} \
     -j test_run \
-    -t 00:59:00 \
+    -t 02:00:00 \
     -n 2 \
     -v "-c /scratch3/${USER}/genslm_wgsi/25M_finetune.yaml"
+# Additional flags
+    # -s # Auto-resubmission after timeout
+    # -m "genslm.model"
 

@@ -1,5 +1,9 @@
 # Modified by: Suk Yee Yong
-# Update date: 19 August 2024
+# Update date: 29 November 2024
+# Changes:
+# - Add `envpath` and `resubmit` to command-line argument
+# - Add virga template
+# - Save `command.log` to file
 
 import subprocess
 import sys
@@ -21,6 +25,7 @@ class HPCSettings(BaseModel):
     reservation: str = ""
     workdir: Path
     envpath: Path
+    resubmit: bool
     filesystems: str = "home:grand:eagle"
     module: str
     """Module path to python entry point."""
@@ -83,6 +88,7 @@ if __name__ == "__main__":
     parser.add_argument("-r", "--reservation", default="")
     parser.add_argument("-w", "--workdir", default=Path("."), type=Path)
     parser.add_argument("-e", "--envpath", default=Path("."), type=Path)
+    parser.add_argument("-s", "--resubmit", action='store_true', help="Only for template=virga, flag to resubmit the SLURM job script after timeout.")
     parser.add_argument("-m", "--module", default="genslm.model")
     parser.add_argument("-v", "--vars", default="", help="module arguments in quotes.")
     parser.add_argument(
@@ -102,13 +108,16 @@ if __name__ == "__main__":
         reservation=args.reservation,
         workdir=args.workdir,
         envpath=args.envpath,
+        resubmit=args.resubmit,
         module=args.module,
         module_args=args.vars,
         filesystems=args.filesystems,
     )
+    if args.workdir:
+        settings.module_args += f" --workdir {args.workdir}"
 
     # Log command for reproducibility
-    with open("command.log", "w") as f:
+    with open(Path(args.workdir, "command.log"), "w") as f:
         f.write(" ".join(sys.argv))
 
     # TODO: Log the nodelist
