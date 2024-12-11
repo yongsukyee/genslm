@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## 2024, December 11
+- fix Virga template for job resubmission as previous one stopped working
+- add load HPC checkpoint from auto-requeue in `model.py`
+- remove load from `last.ckpt` model checkpoint in `model.py`
+
+## 2024, December 6
+- add copy `CONFIG.yaml` file to `workdir` directory in `/hpc/submit.py`
+- add `CSVLogger` as default metrics logger in `model.py`
+
 ## 2024, December 4
 - remove `num_nodes` in configuration as it will be auto-set to `num_nodes`
 - rename `load_pt_checkpoint` to `load_init_pt_checkpoint` in configuration
@@ -8,7 +17,6 @@
 
 ## 2024, November 29
 - modify Virga template to include job resubmission after timeout
-- add job resubmission `-r` as command-line option in `/hpc/submit.py`
 
 ## 2024, August 19
 - add bash script to run on Virga in `run_submit.sh`
