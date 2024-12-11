@@ -16,6 +16,4 @@ python -m genslm.hpc.submit -T virga -A <ACCOUNT> \
     -n 2 \
     -v "-c /scratch3/${USER}/genslm_wgsi/25M_finetune.yaml"
 # Additional flags
-    # -s # Auto-resubmission after timeout
     # -m "genslm.model"
-

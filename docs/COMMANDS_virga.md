@@ -1,13 +1,32 @@
-# COMMAND TO RUN ON VIRGA
+# Command to Run on Virga
 
-## My folder layout
+## Folder Layout
 ```
 genslm_wgsi
-|- run_submit.sh
-|- genslm
+|- genslm/: Modified genslm repo (Virga branch)
+|- genslm_wgsi.env/: Virtual environment
+|- <workdir>/: Work output directory
+|-|- <checkpoint_dir>/: Model checkpoints directory
+|-|-|- hpc_ckpt_*.ckpt/: HPC-specific checkpoint for cluster resumption
+|-|-|- last.ckpt/: Most recent checkpoint
+|-|- logs/: Metric logs directory
+|-|- CONFIG.yaml: Configuration file
+|-|- command.log: Bash command to run script
+|-|- <job_name>.err: Slurm error log file
+|-|- <job_name>.out: Slurm output log file
+|-|- <job_name>.slurm: Slurm job submission script
+|- run_submit.sh: Bash script for Slurm job submission
 ```
 
-## Setup virtual environment
+## Setup and Installation
+Setup genslm code:
+```bash
+git clone https://github.com/yongsukyee/genslm.git
+cd genslm
+git switch virga
+```
+
+Setup virtual environment:
 ```bash
 module load python
 module load pytorch/2.1.1-py312-cu122-mpi
@@ -19,15 +38,15 @@ pip install deepspeed==0.9.*
 pip install -e genslm/.
 ```
 
-## Run script
+## Run Script
 In `run_submit.sh`, edit `<ACCOUNT>` and relevant path location. ~~Ensure that the number of nodes requested with `-n` is the same as `num_nodes` in YAML config.~~ Then,
 ```bash
 bash run_submit.sh
 ```
+The job will auto-requeue when it reaches the wall time limit, and subsequent runs will load the `hpc_ckpt_*.ckpt` checkpoint files.
 
 Additional command-line arguments in `run_submit.sh`:
 - `-e`: Python virtual environment path
-- `-s`: Resubmit the SLURM job script after timeout. To cancel job when `-s` enabled, use `scancel --signal=USR1 <SLURM_JOB_ID>`.
 
 Modified configurations in `CONFIG.yaml`:
 - `checkpoint_dir`: Checkpoint directory within `workdir`

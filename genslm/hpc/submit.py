@@ -1,7 +1,8 @@
 # Modified by: Suk Yee Yong
-# Update date: 29 November 2024
+# Update date: 5 December 2024
 
 import subprocess
+import shutil
 import sys
 from argparse import ArgumentParser
 from pathlib import Path
@@ -21,7 +22,6 @@ class HPCSettings(BaseModel):
     reservation: str = ""
     workdir: Path
     envpath: Path
-    resubmit: bool
     filesystems: str = "home:grand:eagle"
     module: str
     """Module path to python entry point."""
@@ -84,7 +84,6 @@ if __name__ == "__main__":
     parser.add_argument("-r", "--reservation", default="")
     parser.add_argument("-w", "--workdir", default=Path("."), type=Path)
     parser.add_argument("-e", "--envpath", default=Path("."), type=Path)
-    parser.add_argument("-s", "--resubmit", action='store_true', help="Only for template=virga, flag to resubmit the SLURM job script after timeout.")
     parser.add_argument("-m", "--module", default="genslm.model")
     parser.add_argument("-v", "--vars", default="", help="module arguments in quotes.")
     parser.add_argument(
@@ -104,13 +103,22 @@ if __name__ == "__main__":
         reservation=args.reservation,
         workdir=args.workdir,
         envpath=args.envpath,
-        resubmit=args.resubmit,
         module=args.module,
         module_args=args.vars,
         filesystems=args.filesystems,
     )
     if args.workdir:
         settings.module_args += f" --workdir {args.workdir}"
+
+    # Copy CONFIG.yaml file to workdir
+    if '-c' in args.vars:
+        config_file = args.vars.split('-c')[1].strip().split()[0]
+        if config_file:
+            config_file_path = Path(config_file)
+            if config_file_path.exists():
+                new_config_path = args.workdir / config_file_path.name
+                shutil.copy(config_file_path, new_config_path)
+                settings.module_args = settings.module_args.replace(config_file, str(new_config_path), 1)
 
     # Log command for reproducibility
     with open(Path(args.workdir, "command.log"), "w") as f:

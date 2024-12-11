@@ -1,5 +1,5 @@
 # Modified by: Suk Yee Yong
-# Update date: 4 December 2024
+# Update date: 11 December 2024
 
 import json
 import os
@@ -18,6 +18,7 @@ from lightning_transformers.utilities.deepspeed import (
     enable_transformers_pretrained_deepspeed_sharding,
 )
 from pytorch_lightning.callbacks import Callback, LearningRateMonitor, ModelCheckpoint
+from pytorch_lightning.loggers import CSVLogger
 from pytorch_lightning.loggers import WandbLogger
 from pytorch_lightning.profiler import PyTorchProfiler
 from pytorch_lightning.strategies import DeepSpeedStrategy
@@ -264,13 +265,25 @@ class DNATransformer(pl.LightningModule):
 
 
 def train(cfg: ModelSettings) -> None:  # noqa
-    # Load model checkpoint to resume training
+    """
+    # Load last model checkpoint to resume training
     last_checkpoint = cfg.checkpoint_dir / "last.ckpt"
-    if cfg.load_checkpoint_path.exists() or last_checkpoint.exists():
+    if (cfg.load_checkpoint_path and cfg.load_checkpoint_path.exists()) or last_checkpoint.exists():
         model = DNATransformer(cfg)
         # Load from load_checkpoint_path if available, else fall back to last.ckpt
         resume_checkpoint = cfg.load_checkpoint_path or last_checkpoint
         print(f"Resume from checkpoint >> {resume_checkpoint}")
+    """
+    # Load model checkpoint to resume training
+    if (cfg.load_checkpoint_path and cfg.load_checkpoint_path.exists()):
+        model = DNATransformer(cfg)
+        resume_checkpoint = cfg.load_checkpoint_path
+        print(f"Resume from checkpoint >> {resume_checkpoint}")
+    # Load HPC checkpoint from auto-requeue
+    elif list(cfg.checkpoint_dir.glob("hpc_ckpt_*.ckpt")):
+        model = DNATransformer(cfg)
+        resume_checkpoint = None
+        print("Resume from checkpoint >> hpc_ckpt_*.ckpt")
     # Load initial .pt checkpoint
     elif cfg.load_init_pt_checkpoint is not None:
         load_strategy = LoadPTCheckpointStrategy(
@@ -288,7 +301,7 @@ def train(cfg: ModelSettings) -> None:  # noqa
     else:
         model = DNATransformer(cfg)
         resume_checkpoint = None
-        print("No checkpoint found! Training from scratch...")
+        print("No checkpoint found! Training from scratch ...")
 
     callbacks: List[Callback] = []
     print(f"Number of model parameters: {sum(p.numel() for p in model.parameters())}")
@@ -414,7 +427,11 @@ def train(cfg: ModelSettings) -> None:  # noqa
         ),
         callbacks=callbacks,
         # max_steps=cfg.training_steps,
-        logger=wandb_logger,
+        logger=CSVLogger(
+            str(cfg.checkpoint_dir.parent.absolute() / 'logs'),
+            name=f"logs_{os.environ['SLURM_JOB_ID']}_{os.environ.get('SLURM_RESTART_COUNT', '0')}",
+            version=''
+            ) or wandb_logger, # default is CSV logger
         profiler=profiler,
         accumulate_grad_batches=cfg.accumulate_grad_batches,
         num_sanity_val_steps=2,
@@ -427,11 +444,10 @@ def train(cfg: ModelSettings) -> None:  # noqa
         limit_val_batches=cfg.limit_val_batches,
         max_steps=max_steps,
         gradient_clip_val=cfg.gradient_clip_value,
-        resume_from_checkpoint=resume_checkpoint
         # plugins=[SLURMEnvironment(auto_requeue=False)]
     )
 
-    trainer.fit(model)
+    trainer.fit(model, ckpt_path=resume_checkpoint)
 
     if cfg.deepspeed_flops_profile and trainer.is_global_zero:
         flops = model.flops_profiler.get_total_flops()
