@@ -10,11 +10,13 @@ genslm_wgsi
 |-|-|- hpc_ckpt_*.ckpt/: HPC-specific checkpoint for cluster resumption
 |-|-|- last.ckpt/: Most recent checkpoint
 |-|- logs/: Metric logs directory
-|-|- CONFIG.yaml: Configuration file
+|-|-|- logs_<SLURM_JOB_ID>_<SLURM_RESTART_COUNT>/: Metric logs directory for each resubmission
+|-|- <job_name>.yaml: Copy of CONFIG.yaml for the experiment
 |-|- command.log: Bash command to run script
-|-|- <job_name>.err: Slurm error log file
-|-|- <job_name>.out: Slurm output log file
+|-|- <job_name>_<SLURM_JOB_ID>.err: Slurm error log file
+|-|- <job_name>_<SLURM_JOB_ID>.out: Slurm output log file
 |-|- <job_name>.slurm: Slurm job submission script
+|- CONFIG.yaml: Base configuration file
 |- run_submit.sh: Bash script for Slurm job submission
 ```
 

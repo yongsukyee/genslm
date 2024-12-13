@@ -116,7 +116,7 @@ if __name__ == "__main__":
         if config_file:
             config_file_path = Path(config_file)
             if config_file_path.exists():
-                new_config_path = args.workdir / config_file_path.name
+                new_config_path = args.workdir / f"{settings.job_name}.yaml"
                 shutil.copy(config_file_path, new_config_path)
                 settings.module_args = settings.module_args.replace(config_file, str(new_config_path), 1)
 
