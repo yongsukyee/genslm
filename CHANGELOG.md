@@ -10,7 +10,6 @@
 - add `CSVLogger` as default metrics logger in `model.py`
 
 ## 2024, December 4
-- remove `num_nodes` in configuration as it will be auto-set to `num_nodes`
 - rename `load_pt_checkpoint` to `load_init_pt_checkpoint` in configuration
 - add `load_checkpoint_path` in configuration
 - add load model from specified checkpoint `load_checkpoint_path` or `last.ckpt` if available in `model.py`

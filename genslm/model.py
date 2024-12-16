@@ -471,15 +471,10 @@ def train(cfg: ModelSettings) -> None:  # noqa
 if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("-c", "--config", required=True)
-    parser.add_argument("-n", "--nodes", default=1, type=int)
     parser.add_argument("-w", "--workdir", default=Path("."), type=Path)
     args = parser.parse_args()
     config = ModelSettings.from_yaml(args.config)
 
-    # Set num_nodes=nodes else will error in run
-    if config.num_nodes != args.nodes:
-        config.num_nodes = args.nodes
-        warnings.warn(f"num_nodes!=nodes, setting num_nodes={args.nodes}")
     # Save checkpoint in work directory
     if config.checkpoint_dir:
         config.checkpoint_dir = args.workdir / config.checkpoint_dir
