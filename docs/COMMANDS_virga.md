@@ -37,7 +37,7 @@ python -m venv --system-site-packages ./genslm_wgsi.env
 source genslm_wgsi.env/bin/activate
 pip install -r requirements/requirements_virga.txt
 pip install deepspeed==0.9.*
-pip install -e genslm/.
+pip install -e .
 ```
 
 ## Run Script
