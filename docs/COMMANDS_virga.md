@@ -35,8 +35,8 @@ module load pytorch/2.1.1-py312-cu122-mpi
 module load transformers/4.34.1-py312
 python -m venv --system-site-packages ./genslm_wgsi.env
 source genslm_wgsi.env/bin/activate
-pip install -r requirements/requirements_virga.txt
-pip install deepspeed==0.9.*
+pip install -r requirements/requirements_virga.txt --no-cache-dir
+pip install deepspeed==0.9.* --no-cache-dir
 pip install -e .
 ```
 
