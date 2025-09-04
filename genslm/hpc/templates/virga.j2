@@ -12,9 +12,9 @@
 #SBATCH --signal=SIGUSR1@60
 
 
-module load python
-module load pytorch
-module load transformers/4.34.1-py312
+# module load python
+# module load pytorch
+# module load transformers/4.34.1-py312
 source {{ envpath }}/bin/activate
 
 export MASTER_PORT=1234
