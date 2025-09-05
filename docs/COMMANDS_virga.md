@@ -34,6 +34,7 @@ module load python
 python -m venv ./genslm_wgsi.env
 source genslm_wgsi.env/bin/activate
 pip install -r requirements/requirements_virga.txt --no-cache-dir
+pip install -e .
 ```
 
 ## Run Script
